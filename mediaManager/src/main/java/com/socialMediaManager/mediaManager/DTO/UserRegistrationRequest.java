@@ -10,7 +10,7 @@ public class UserRegistrationRequest {
     private @NotNull String username;
     private @NotNull String password;
     private @NotNull String email;
-    private @NotNull String mobileNo;
+    private @NotNull String mobilenumber;
     private @NotNull String country;
     private @NotNull int age;
     private String state;

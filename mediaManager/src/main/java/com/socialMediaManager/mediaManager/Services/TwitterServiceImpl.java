@@ -9,6 +9,8 @@ import com.socialMediaManager.mediaManager.Repositories.TwitterServiceRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class TwitterServiceImpl implements TwitterService {
 
@@ -22,9 +24,11 @@ public class TwitterServiceImpl implements TwitterService {
     }
     @Override
     public UserRegistrationResponse processAndSaveUserRegistrationDetails(UserRegistrationRequest request) {
-        UserRegistration user = twitterServiceRepo.findByEmailAndMobileno(request.getEmail(),request.getMobileNo()).
-                                orElseThrow(()-> new userAlreadyExistsException("User with email " + request.getEmail() +
-                                        " and mobile number " + request.getMobileNo() + " already exists."));
+        Optional<UserRegistration> user = twitterServiceRepo.findByEmailAndMobileno(request.getEmail(),request.getMobilenumber());
+        if(user.isPresent()) {
+            throw new userAlreadyExistsException("User with email " + request.getEmail() +
+                    " and mobile number " + request.getMobilenumber() + " already exists.");
+        }
         twitterServiceRepo.save(userRegistrationMapper.convertToUserRegistrationEntity(request));
         return userRegistrationMapper.convertToUserRegistrationResponse(request);
     }
