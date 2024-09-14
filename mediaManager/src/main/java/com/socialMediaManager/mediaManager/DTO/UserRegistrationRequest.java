@@ -1,4 +1,4 @@
-package com.socialMediaManager.mediaManager.DTO;
+package com.socialMediaManager.mediaManager.dto;
 
 import lombok.Data;
 

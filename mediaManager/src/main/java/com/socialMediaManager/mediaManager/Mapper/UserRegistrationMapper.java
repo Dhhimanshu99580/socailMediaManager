@@ -1,10 +1,9 @@
-package com.socialMediaManager.mediaManager.Mapper;
+package com.socialMediaManager.mediaManager.mapper;
 
-import com.socialMediaManager.mediaManager.DTO.UserRegistrationRequest;
-import com.socialMediaManager.mediaManager.DTO.UserRegistrationResponse;
-import com.socialMediaManager.mediaManager.Entities.UserRegistration;
+import com.socialMediaManager.mediaManager.dto.UserRegistrationRequest;
+import com.socialMediaManager.mediaManager.dto.UserRegistrationResponse;
+import com.socialMediaManager.mediaManager.entities.UserRegistration;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.socialMediaManager.mediaManager.config.PasswordConfig;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 public class UserRegistrationMapper {

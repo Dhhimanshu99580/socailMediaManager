@@ -1,4 +1,4 @@
-package com.socialMediaManager.mediaManager.Exceptions;
+package com.socialMediaManager.mediaManager.exceptions;
 
 public class userAlreadyExistsException extends RuntimeException {
     public userAlreadyExistsException (String msg) {

@@ -1,9 +1,11 @@
-package com.socialMediaManager.mediaManager.Services;
+package com.socialMediaManager.mediaManager.services;
 
-import com.socialMediaManager.mediaManager.DTO.UserRegistrationRequest;
-import com.socialMediaManager.mediaManager.DTO.UserRegistrationResponse;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.socialMediaManager.mediaManager.dto.UserLoginRequest;
+import com.socialMediaManager.mediaManager.dto.UserLoginResponse;
+import com.socialMediaManager.mediaManager.dto.UserRegistrationRequest;
+import com.socialMediaManager.mediaManager.dto.UserRegistrationResponse;
 
 public interface TwitterService {
     public UserRegistrationResponse processAndSaveUserRegistrationDetails(UserRegistrationRequest request);
+    //public UserLoginResponse userLogin(UserLoginRequest request);
 }

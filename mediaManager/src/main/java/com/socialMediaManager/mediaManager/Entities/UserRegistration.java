@@ -1,4 +1,4 @@
-package com.socialMediaManager.mediaManager.Entities;
+package com.socialMediaManager.mediaManager.entities;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
