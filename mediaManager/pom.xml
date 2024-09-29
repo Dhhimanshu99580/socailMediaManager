@@ -135,6 +135,33 @@
 
 			<version>3.1.0</version>
 		</dependency>
+			<dependency>
+				<groupId>com.github.scribejava</groupId>
+				<artifactId>scribejava-core</artifactId>
+				<version>8.3.3</version>
+			</dependency>
+
+			<!-- For Twitter OAuth1 Support -->
+			<dependency>
+				<groupId>com.github.scribejava</groupId>
+				<artifactId>scribejava-apis</artifactId>
+				<version>8.3.3</version>
+			</dependency>
+
+		<!-- https://mvnrepository.com/artifact/com.github.scribejava/scribejava-apis -->
+		<dependency>
+			<groupId>com.github.scribejava</groupId>
+			<artifactId>scribejava-apis</artifactId>
+			<version>8.3.1</version>
+			<scope>runtime</scope>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.springframework.security/spring-security-oauth2-client -->
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-oauth2-client</artifactId>
+			<version>6.3.1</version>
+		</dependency>
+
 
 	</dependencies>
 
