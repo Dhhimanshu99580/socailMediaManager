@@ -10,6 +10,8 @@ import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.core.OAuth2RefreshToken;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -46,10 +48,10 @@ public class TwitterAuthController {
         if (!state.equals("RANDOM_STATE_STRING")) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid state"); }
         try{
-            OAuth2AccessToken accessToken = twitterService.getAccessToken()
-            OAuth1AccessToken oAuth1AccessToken  = service.getAccessToken(oAuth1RequestToken,oauthVerifier);
-            String token = oAuth1AccessToken.getToken();
-            String tokenSecret = oAuth1AccessToken.getTokenSecret();
+            OAuth2AccessTokenResponse accessTokenResponse = twitterService.getAccessToken(code);
+            String token = accessTokenResponse.getAccessToken().getTokenValue();
+            OAuth2RefreshToken refreshTokenObj = accessTokenResponse.getRefreshToken();
+            String refreshToken = refreshTokenObj.getTokenValue();
             //Need to store these token and tokenSecret with regard to each user
             return ResponseEntity.ok("Twitter user is authenticated successfully");
         } catch(Exception e) {
