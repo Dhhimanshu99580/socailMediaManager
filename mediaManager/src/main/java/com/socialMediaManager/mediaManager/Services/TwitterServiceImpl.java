@@ -2,24 +2,33 @@ package com.socialMediaManager.mediaManager.services;
 
 import com.github.scribejava.core.builder.ServiceBuilder;
 import com.github.scribejava.core.model.OAuth1RequestToken;
+import com.github.scribejava.core.model.Response;
+import com.socialMediaManager.mediaManager.dto.TwitterPostRequest;
+import com.socialMediaManager.mediaManager.dto.TwitterPostResponse;
 import com.socialMediaManager.mediaManager.dto.UserLoginRequest;
 import com.socialMediaManager.mediaManager.dto.UserLoginResponse;
 import com.socialMediaManager.mediaManager.dto.UserRegistrationRequest;
 import com.socialMediaManager.mediaManager.dto.UserRegistrationResponse;
 import com.socialMediaManager.mediaManager.entities.UserRegistration;
+import com.socialMediaManager.mediaManager.entities.UserTokens;
 import com.socialMediaManager.mediaManager.exceptions.badCredentialsException;
 import com.socialMediaManager.mediaManager.exceptions.userAlreadyExistsException;
 import com.socialMediaManager.mediaManager.exceptions.userDoesNotExistException;
 import com.socialMediaManager.mediaManager.mapper.UserRegistrationMapper;
+import com.socialMediaManager.mediaManager.repositories.TokenRepo;
 import com.socialMediaManager.mediaManager.repositories.TwitterServiceRepo;
+import com.socialMediaManager.mediaManager.utility.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
+import org.springframework.security.oauth2.core.OAuth2RefreshToken;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -35,9 +44,12 @@ import java.util.Optional;
 @Service
 public class TwitterServiceImpl implements TwitterService {
     private final PasswordEncoder passwordEncoder;
+    private final String TWITTER_API_URL = "https://api.x.com/2/tweets";
 
     private final TwitterServiceRepo twitterServiceRepo;
     private final UserRegistrationMapper userRegistrationMapper;
+    private final UserTokens userToken;
+    private final TokenRepo tokenRepo;
     @Value("${twitter.client-id}")
     private String clientId;
 
@@ -49,11 +61,20 @@ public class TwitterServiceImpl implements TwitterService {
 
     @Autowired
     public TwitterServiceImpl(TwitterServiceRepo twitterServiceRepo
-            ,UserRegistrationMapper userRegistrationMapper,PasswordEncoder passwordEncoder) {
+            , UserRegistrationMapper userRegistrationMapper, PasswordEncoder passwordEncoder, TokenRepo tokenRepo, UserTokens userToken) {
         this.twitterServiceRepo = twitterServiceRepo;
         this.userRegistrationMapper = userRegistrationMapper;
         this.passwordEncoder = passwordEncoder;
+        this.tokenRepo = tokenRepo;
+        this.userToken = userToken;
     }
+    @Autowired
+    private TwitterService twitterService;
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
+
+    @Autowired
+    private RestTemplate restTemplate;
     @Override
     public UserRegistrationResponse processAndSaveUserRegistrationDetails(UserRegistrationRequest request) {
         Optional<UserRegistration> user = twitterServiceRepo.findByEmailAndMobileno(request.getEmail(),request.getMobilenumber());
@@ -86,7 +107,7 @@ public class TwitterServiceImpl implements TwitterService {
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("code", code);
         body.add("grant_type", "authorization_code");
-        body.add("redirect_uri", "YOUR_CALLBACK_URL");
+        body.add("redirect_uri", "CALLBACK_URL");
 
         HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(body, httpHeaders);
         ResponseEntity<Map> response = restTemplate.exchange("https://api.x.com/oauth2/token", HttpMethod.POST, entity, Map.class);
@@ -99,6 +120,32 @@ public class TwitterServiceImpl implements TwitterService {
                 .build();
 
     }
+    public void uploadAccessToken(String code, String state) throws Exception {
+        OAuth2AccessTokenResponse accessTokenResponse = twitterService.getAccessToken(code);
+        String token = accessTokenResponse.getAccessToken().getTokenValue();
+        OAuth2RefreshToken refreshTokenObj = accessTokenResponse.getRefreshToken();
+        String refreshToken = refreshTokenObj.getTokenValue();
+        String username = jwtTokenProvider.getUsernameFromToken(token);
+        Optional<UserRegistration> user  = twitterServiceRepo.findByUsername(username);
+        if(!user.isPresent()) {
+            return;
+        }
+        userToken.setUsername(user.get().getUsername());
+        userToken.setToken(token);
+        userToken.setRefreshToken(refreshToken);
+        tokenRepo.save(userToken);
+    }
+    public TwitterPostResponse postOnTwitter(TwitterPostRequest request) {
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setBearerAuth("changeMePlease");
+        httpHeaders.set("Content-Type","application/json");
+        try {
+            HttpEntity<TwitterPostRequest> httpEntity = new HttpEntity<>(request,httpHeaders);
+            ResponseEntity<TwitterPostResponse> responseEntity = restTemplate.postForEntity(TWITTER_API_URL,httpEntity,TwitterPostResponse.class);
+            return responseEntity.getBody();
+        } catch (Exception e) {
 
+        }
 
+    }
 }
