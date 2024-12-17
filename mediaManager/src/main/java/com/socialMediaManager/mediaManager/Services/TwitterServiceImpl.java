@@ -33,6 +33,8 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenRespon
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpHeaders;
 
@@ -137,15 +139,25 @@ public class TwitterServiceImpl implements TwitterService {
     }
     public TwitterPostResponse postOnTwitter(TwitterPostRequest request) {
         HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setBearerAuth("changeMePlease");
+        httpHeaders.setBearerAuth("changeMePlease"); // change here
         httpHeaders.set("Content-Type","application/json");
         try {
             HttpEntity<TwitterPostRequest> httpEntity = new HttpEntity<>(request,httpHeaders);
             ResponseEntity<TwitterPostResponse> responseEntity = restTemplate.postForEntity(TWITTER_API_URL,httpEntity,TwitterPostResponse.class);
             return responseEntity.getBody();
+        } catch (HttpClientErrorException e) {
+            if(e.getStatusCode().is4xxClientError()) {
+                System.err.println("Client Error" + e.getStatusCode()+ "-" + e.getStatusText());
+                System.err.println("ResponseBody" + e.getResponseBodyAsString());
+            } else {
+                System.err.println("Unexpected error" + e.getStatusCode());
+            }
+        } catch (HttpServerErrorException e) {
+            System.err.println("Server Error" +e.getStatusCode()+ "-" + e.getStatusText());
+            System.err.println("ResponseBody" + e.getResponseBodyAsString());
         } catch (Exception e) {
-
+            System.err.println("Some error occured" +e.getMessage());
         }
-
+        return responseEntity;
     }
 }
