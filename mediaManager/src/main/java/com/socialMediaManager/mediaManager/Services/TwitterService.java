@@ -1,5 +1,7 @@
 package com.socialMediaManager.mediaManager.services;
 
+import com.socialMediaManager.mediaManager.dto.TwitterPostRequest;
+import com.socialMediaManager.mediaManager.dto.TwitterPostResponse;
 import com.socialMediaManager.mediaManager.dto.UserLoginRequest;
 import com.socialMediaManager.mediaManager.dto.UserLoginResponse;
 import com.socialMediaManager.mediaManager.dto.UserRegistrationRequest;
@@ -12,4 +14,7 @@ public interface TwitterService {
     public String getAuthorizationUrl () throws Exception;
     //public UserLoginResponse userLogin(UserLoginRequest request);
     public OAuth2AccessTokenResponse getAccessToken(String code)  throws Exception;
+    public void uploadAccessToken(String code, String state) throws Exception;
+    public TwitterPostResponse postOnTwitter(TwitterPostRequest request) throws Exception
+
 }

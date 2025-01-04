@@ -16,7 +16,7 @@ public class UserRegistration {
     private Long id;
     @Column(nullable = false,length = 30)
     private String name;
-    @Column(unique = true,nullable = false,length = 15)
+    @Column(unique = true,nullable = false,length = 30)
     private String username;
     @Size(min = 8,max=15)
     @Column(nullable = false)

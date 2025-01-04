@@ -47,4 +47,5 @@ public class UserRegistrationController  {
         final String jwt = jwtTokenProvider.generateToken(userDetails.getUsername());
         return ResponseEntity.ok(jwt);
     }
+
 }
