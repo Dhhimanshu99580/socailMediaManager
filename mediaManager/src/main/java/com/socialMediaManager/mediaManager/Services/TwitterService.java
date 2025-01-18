@@ -15,6 +15,6 @@ public interface TwitterService {
     //public UserLoginResponse userLogin(UserLoginRequest request);
     public OAuth2AccessTokenResponse getAccessToken(String code)  throws Exception;
     public void uploadAccessToken(String code, String state) throws Exception;
-    public TwitterPostResponse postOnTwitter(TwitterPostRequest request) throws Exception
+    public TwitterPostResponse postOnTwitter(TwitterPostRequest request) throws Exception;
 
 }
