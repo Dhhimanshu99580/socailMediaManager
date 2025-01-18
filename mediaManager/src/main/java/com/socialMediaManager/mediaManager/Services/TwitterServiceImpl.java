@@ -158,6 +158,6 @@ public class TwitterServiceImpl implements TwitterService {
         } catch (Exception e) {
             System.err.println("Some error occured" +e.getMessage());
         }
-        return responseEntity;
+        return null;
     }
 }
