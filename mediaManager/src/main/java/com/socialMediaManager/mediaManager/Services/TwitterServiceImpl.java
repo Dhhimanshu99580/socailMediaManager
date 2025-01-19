@@ -38,10 +38,13 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpHeaders;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class TwitterServiceImpl implements TwitterService {
@@ -92,14 +95,31 @@ public class TwitterServiceImpl implements TwitterService {
     public String getAuthorizationUrl() throws Exception {
         String codeVerifier = OAuthUtil.generateCodeVerifier();
         String codeChallenge = OAuthUtil.generateCodeChallenge(codeVerifier);
-        String state = "RANDOM_STATE_STRING";
 
-        return String.format("https://twitter.com/i/oauth2/authorize?response_type=code&client_id=%s&redirect_uri=%s&scope=tweet.read%%20tweet.write&state=%s&code_challenge=%s&code_challenge_method=S256",
-                clientId, redirectUri, state, codeChallenge);
+        //generate unique state for CSRF protection
+        String state = UUID.randomUUID().toString();
+
+        //Save the code verifier and state in DB
+        //This will be used later when exchanging the code for tokens
+        saveStateAndCodeVerifier(state,codeVerifier);
+
+        String baseUrl = "https://x.com/i/oauth2/authorize";
+        String cientId = "Replace it with you original client ID from X developers forum";
+        String redirectri = URLEncoder.encode("My_redirect_URI", StandardCharsets.UTF_8);
+        String scope = URLEncoder.encode("tweet.read tweet.write users.read offline.access",StandardCharsets.UTF_8);
+
+        String url = "https://x.com/i/oauth2/authorize?response_type=code&client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&scope=tweet.read%20tweet.write%20users.read%20offline.acces&state=YOUR_UNIQUE_STATE&code_challenge=YOUR_CODE_CHALLENGE&code_challenge_method=plain";
+
+
+        return String.format("%s?response_type=code&client_id=%s&redirect_uri=%s&scope=%s&state=%s&code_challenge=%s&code_challenge_method=SH256",
+                baseUrl,clientId,redirectri,scope,state,codeChallenge);
+    }
+    public void saveStateAndCodeVerifier(String state,String codeVerifier) {
+        //save these to DB and retrieve for verification with the code we receive in our callback URI
     }
 
     @Override
-    public OAuth2AccessTokenResponse getAccessToken(String code) throws Exception {
+    public OAuth2AccessTokenResponse getAccessToken(String code,String state) throws Exception {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.valueOf("application/x-www-form-urlencoded"));
@@ -115,6 +135,10 @@ public class TwitterServiceImpl implements TwitterService {
         ResponseEntity<Map> response = restTemplate.exchange("https://api.x.com/oauth2/token", HttpMethod.POST, entity, Map.class);
 
         Map<String, Object> responseBody = response.getBody();
+        if(responseBody == null || !responseBody.containsKey("access_token")) {
+            throw new Exception("Didn't get proper response from the Authorization Server");
+        }
+        uploadAccessToken(responseBody);
         return OAuth2AccessTokenResponse.withToken(responseBody.get("access_token").toString())
                 .refreshToken(responseBody.get("refresh_token").toString())
                 .tokenType(OAuth2AccessToken.TokenType.BEARER)
@@ -122,11 +146,10 @@ public class TwitterServiceImpl implements TwitterService {
                 .build();
 
     }
-    public void uploadAccessToken(String code, String state) throws Exception {
-        OAuth2AccessTokenResponse accessTokenResponse = twitterService.getAccessToken(code);
-        String token = accessTokenResponse.getAccessToken().getTokenValue();
-        OAuth2RefreshToken refreshTokenObj = accessTokenResponse.getRefreshToken();
-        String refreshToken = refreshTokenObj.getTokenValue();
+    public void uploadAccessToken(Map<String,Object> accessTokenResponse) throws Exception {
+        String token = accessTokenResponse.get("access_token").toString();
+        String refreshToken = accessTokenResponse.get("refresh_token").toString();
+        int expiresIn = (int)accessTokenResponse.get("expires_in");
         String username = jwtTokenProvider.getUsernameFromToken(token);
         Optional<UserRegistration> user  = twitterServiceRepo.findByUsername(username);
         if(!user.isPresent()) {

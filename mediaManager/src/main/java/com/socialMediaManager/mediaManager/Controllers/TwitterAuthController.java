@@ -48,11 +48,7 @@ public class TwitterAuthController {
         if (!state.equals("RANDOM_STATE_STRING")) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid state"); }
         try{
-            twitterService.uploadAccessToken(code,state);
-            OAuth2AccessTokenResponse accessTokenResponse = twitterService.getAccessToken(code);
-            String token = accessTokenResponse.getAccessToken().getTokenValue();
-            OAuth2RefreshToken refreshTokenObj = accessTokenResponse.getRefreshToken();
-            String refreshToken = refreshTokenObj.getTokenValue();
+            twitterService.getAccessToken(code,state);
             //Need to store these token and tokenSecret with regard to each user
             return ResponseEntity.ok("Twitter user is authenticated successfully");
         } catch(Exception e) {
