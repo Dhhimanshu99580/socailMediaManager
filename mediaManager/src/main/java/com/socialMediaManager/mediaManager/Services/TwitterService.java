@@ -16,5 +16,6 @@ public interface TwitterService {
     public OAuth2AccessTokenResponse getAccessToken(String code,String state)  throws Exception;
     public void uploadAccessToken(String code, String state) throws Exception;
     public TwitterPostResponse postOnTwitter(TwitterPostRequest request) throws Exception;
+    public void saveTheDataForFuturePost(TwitterPostRequest request) throws Exception;
 
 }
