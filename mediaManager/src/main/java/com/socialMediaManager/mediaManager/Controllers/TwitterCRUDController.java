@@ -20,7 +20,7 @@ public class TwitterCRUDController {
     @PostMapping("/post")
     public TwitterPostResponse postOnTwitter(@Valid @RequestBody TwitterPostRequest request) throws Exception {
         try{
-            return twitterService.postOnTwitter(request);
+            return twitterService.saveTheDataForFuturePost(request);
         } catch (Exception e){
             throw e;
         }

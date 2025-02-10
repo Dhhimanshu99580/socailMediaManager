@@ -9,6 +9,7 @@ import com.socialMediaManager.mediaManager.dto.UserLoginRequest;
 import com.socialMediaManager.mediaManager.dto.UserLoginResponse;
 import com.socialMediaManager.mediaManager.dto.UserRegistrationRequest;
 import com.socialMediaManager.mediaManager.dto.UserRegistrationResponse;
+import com.socialMediaManager.mediaManager.entities.PostDetails;
 import com.socialMediaManager.mediaManager.entities.UserRegistration;
 import com.socialMediaManager.mediaManager.entities.UserTokens;
 import com.socialMediaManager.mediaManager.exceptions.badCredentialsException;
@@ -40,6 +41,7 @@ import org.springframework.http.HttpHeaders;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,6 +57,7 @@ public class TwitterServiceImpl implements TwitterService {
     private final UserRegistrationMapper userRegistrationMapper;
     private final UserTokens userToken;
     private final TokenRepo tokenRepo;
+    private final PostDetails postDetails;
     @Value("${twitter.client-id}")
     private String clientId;
 
@@ -66,12 +69,13 @@ public class TwitterServiceImpl implements TwitterService {
 
     @Autowired
     public TwitterServiceImpl(TwitterServiceRepo twitterServiceRepo
-            , UserRegistrationMapper userRegistrationMapper, PasswordEncoder passwordEncoder, TokenRepo tokenRepo, UserTokens userToken) {
+            , UserRegistrationMapper userRegistrationMapper, PasswordEncoder passwordEncoder, TokenRepo tokenRepo, UserTokens userToken, PostDetails postDetails) {
         this.twitterServiceRepo = twitterServiceRepo;
         this.userRegistrationMapper = userRegistrationMapper;
         this.passwordEncoder = passwordEncoder;
         this.tokenRepo = tokenRepo;
         this.userToken = userToken;
+        this.postDetails = postDetails;
     }
     @Autowired
     private TwitterService twitterService;
@@ -105,14 +109,15 @@ public class TwitterServiceImpl implements TwitterService {
 
         String baseUrl = "https://x.com/i/oauth2/authorize";
         String cientId = "Replace it with you original client ID from X developers forum";
-        String redirectri = URLEncoder.encode("My_redirect_URI", StandardCharsets.UTF_8);
+        String redirecturi = URLEncoder.encode("My_redirect_URI", StandardCharsets.UTF_8);
         String scope = URLEncoder.encode("tweet.read tweet.write users.read offline.access",StandardCharsets.UTF_8);
 
+        // where are we using this url ?? or do we even need this?
         String url = "https://x.com/i/oauth2/authorize?response_type=code&client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&scope=tweet.read%20tweet.write%20users.read%20offline.acces&state=YOUR_UNIQUE_STATE&code_challenge=YOUR_CODE_CHALLENGE&code_challenge_method=plain";
 
 
         return String.format("%s?response_type=code&client_id=%s&redirect_uri=%s&scope=%s&state=%s&code_challenge=%s&code_challenge_method=SH256",
-                baseUrl,clientId,redirectri,scope,state,codeChallenge);
+                baseUrl,clientId,redirecturi,scope,state,codeChallenge);
     }
     public void saveStateAndCodeVerifier(String state,String codeVerifier) {
         //save these to DB and retrieve for verification with the code we receive in our callback URI
@@ -138,7 +143,7 @@ public class TwitterServiceImpl implements TwitterService {
         if(responseBody == null || !responseBody.containsKey("access_token")) {
             throw new Exception("Didn't get proper response from the Authorization Server");
         }
-        uploadAccessToken(responseBody);
+        uploadAccessToken(responseBody); // need to save this with proper encryption
         return OAuth2AccessTokenResponse.withToken(responseBody.get("access_token").toString())
                 .refreshToken(responseBody.get("refresh_token").toString())
                 .tokenType(OAuth2AccessToken.TokenType.BEARER)
@@ -164,6 +169,7 @@ public class TwitterServiceImpl implements TwitterService {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setBearerAuth("changeMePlease"); // change here
         httpHeaders.set("Content-Type","application/json");
+
         try {
             HttpEntity<TwitterPostRequest> httpEntity = new HttpEntity<>(request,httpHeaders);
             ResponseEntity<TwitterPostResponse> responseEntity = restTemplate.postForEntity(TWITTER_API_URL,httpEntity,TwitterPostResponse.class);
@@ -182,5 +188,19 @@ public class TwitterServiceImpl implements TwitterService {
             System.err.println("Some error occured" +e.getMessage());
         }
         return null;
+    }
+    public void saveTheDataForFuturePost(TwitterPostRequest request) {
+        //Save these details in db in proper format.So that when cron runs it fetch these to POST on respective service
+        //Also save the service like X,Meta,Google etc..
+        UserTokens user = TokenRepo.findByAccessToken(getAccessToken()).orElse{
+            //No user exist with this token
+        }
+        if(request.getTimeToPost< LocalDateTime.now()) {
+            System.err.println("Time to post can't be less than current time");
+        }
+        postDetails.setUsername(user.getUsername());
+        postDetails.setService(request.getService());
+        postDetails.setEligibleTime(request.getTimeToPost());
+        postDetails.setData(request.getData());
     }
 }

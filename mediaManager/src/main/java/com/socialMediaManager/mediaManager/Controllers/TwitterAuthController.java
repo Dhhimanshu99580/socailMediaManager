@@ -45,6 +45,7 @@ public class TwitterAuthController {
     @GetMapping("/callback")
     public ResponseEntity<String> twitterCallback(@RequestParam("code") String code,
                                                   @RequestParam("state")String state) {
+        //replace with original state
         if (!state.equals("RANDOM_STATE_STRING")) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid state"); }
         try{
