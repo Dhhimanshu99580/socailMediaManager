@@ -105,19 +105,23 @@ public class TwitterServiceImpl implements TwitterService {
 
         //Save the code verifier and state in DB
         //This will be used later when exchanging the code for tokens
-        saveStateAndCodeVerifier(state,codeVerifier);
+        saveStateAndCodeVerifier(state, codeVerifier);
 
         String baseUrl = "https://x.com/i/oauth2/authorize";
         String cientId = "Replace it with you original client ID from X developers forum";
-        String redirecturi = URLEncoder.encode("My_redirect_URI", StandardCharsets.UTF_8);
-        String scope = URLEncoder.encode("tweet.read tweet.write users.read offline.access",StandardCharsets.UTF_8);
+        String redirectUri = URLEncoder.encode("MY_REDIRECT_URI", StandardCharsets.UTF_8);
+        String scope = URLEncoder.encode("tweet.read tweet.write users.read offline.access", StandardCharsets.UTF_8);
+        String encodedState = URLEncoder.encode(state, StandardCharsets.UTF_8);
+        String encodedCodeChallenge = URLEncoder.encode(codeChallenge, StandardCharsets.UTF_8);
 
         // where are we using this url ?? or do we even need this?
-        String url = "https://x.com/i/oauth2/authorize?response_type=code&client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&scope=tweet.read%20tweet.write%20users.read%20offline.acces&state=YOUR_UNIQUE_STATE&code_challenge=YOUR_CODE_CHALLENGE&code_challenge_method=plain";
+        // String url = "https://x.com/i/oauth2/authorize?response_type=code&client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&scope=tweet.read%20tweet.write%20users.read%20offline.acces&state=YOUR_UNIQUE_STATE&code_challenge=YOUR_CODE_CHALLENGE&code_challenge_method=plain";
 
 
-        return String.format("%s?response_type=code&client_id=%s&redirect_uri=%s&scope=%s&state=%s&code_challenge=%s&code_challenge_method=SH256",
-                baseUrl,clientId,redirecturi,scope,state,codeChallenge);
+        return String.format(
+                "%s?response_type=code&client_id=%s&redirect_uri=%s&scope=%s&state=%s&code_challenge=%s&code_challenge_method=S256",
+                baseUrl, clientId, redirectUri, scope, encodedState, encodedCodeChallenge
+        );
     }
     public void saveStateAndCodeVerifier(String state,String codeVerifier) {
         //save these to DB and retrieve for verification with the code we receive in our callback URI
@@ -133,7 +137,7 @@ public class TwitterServiceImpl implements TwitterService {
         httpHeaders.add("Authorization", "Basic " + base64Creds);
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("code", code);
-        body.add("grant_type", "authorization_code");
+        body.add("grant_type", "authorization_code"); // need original authorization_code
         body.add("redirect_uri", "CALLBACK_URL");
 
         HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(body, httpHeaders);
@@ -189,18 +193,18 @@ public class TwitterServiceImpl implements TwitterService {
         }
         return null;
     }
-    public void saveTheDataForFuturePost(TwitterPostRequest request) {
-        //Save these details in db in proper format.So that when cron runs it fetch these to POST on respective service
-        //Also save the service like X,Meta,Google etc..
-        UserTokens user = TokenRepo.findByAccessToken(getAccessToken()).orElse{
-            //No user exist with this token
-        }
-        if(request.getTimeToPost< LocalDateTime.now()) {
-            System.err.println("Time to post can't be less than current time");
-        }
-        postDetails.setUsername(user.getUsername());
-        postDetails.setService(request.getService());
-        postDetails.setEligibleTime(request.getTimeToPost());
-        postDetails.setData(request.getData());
-    }
+//        public void saveTheDataForFuturePost(TwitterPostRequest request) {
+//            //Save these details in db in proper format.So that when cron runs it fetch these to POST on respective service
+//            //Also save the service like X,Meta,Google etc..
+//            UserTokens user = TokenRepo.findByAccessToken(getAccessToken()).orElse{
+//                //No user exist with this token
+//            }
+//            if(request.getTimeToPost< LocalDateTime.now()) {
+//                System.err.println("Time to post can't be less than current time");
+//            }
+//            postDetails.setUsername(user.getUsername());
+//            postDetails.setService(request.getService());
+//            postDetails.setEligibleTime(request.getTimeToPost());
+//            postDetails.setData(request.getData());
+//        }
 }
