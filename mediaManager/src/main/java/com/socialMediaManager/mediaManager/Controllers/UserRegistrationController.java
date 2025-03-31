@@ -41,7 +41,8 @@ public class UserRegistrationController  {
                     request.getPassword()));
 
         } catch(AuthenticationException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Credentials");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Invalid Credentials");
         }
         final UserDetails userDetails = userDetailsService.loadUserByUsername(request.getUsername());
         final String jwt = jwtTokenProvider.generateToken(userDetails.getUsername());
