@@ -6,6 +6,7 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenRespon
 
 public interface TokenRepo extends JpaRepository<UserTokens,Long> {
 
-    static Object findByAccessToken(OAuth2AccessTokenResponse accessToken) {
-    }
+//    static Object findByAccessToken(OAuth2AccessTokenResponse accessToken) {
+//        return
+//    }
 }

@@ -17,14 +17,14 @@ public class TwitterCRUDController {
 
     @Autowired
     private TwitterService twitterService;
-    @PostMapping("/post")
-    public TwitterPostResponse postOnTwitter(@Valid @RequestBody TwitterPostRequest request) throws Exception {
-        try{
-            return twitterService.saveTheDataForFuturePost(request);
-        } catch (Exception e){
-            throw e;
-        }
-
-    }
+//    @PostMapping("/post")
+//    public TwitterPostResponse postOnTwitter(@Valid @RequestBody TwitterPostRequest request) throws Exception {
+//        try{
+//            return twitterService.saveTheDataForFuturePost(request);
+//        } catch (Exception e){
+//            throw e;
+//        }
+//
+//    }
 
 }
