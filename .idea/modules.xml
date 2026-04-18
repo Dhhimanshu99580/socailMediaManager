@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/mediaManager.iml" filepath="$PROJECT_DIR$/.idea/mediaManager.iml" />
+      <module fileurl="file://$PROJECT_DIR$/mediaManager/mediaManager.iml" filepath="$PROJECT_DIR$/mediaManager/mediaManager.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/socailMediaManager.iml" filepath="$PROJECT_DIR$/.idea/socailMediaManager.iml" />
     </modules>
   </component>
 </project>

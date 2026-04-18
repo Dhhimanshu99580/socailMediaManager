@@ -5,9 +5,10 @@ import com.socialMediaManager.mediaManager.dto.UserRegistrationResponse;
 import com.socialMediaManager.mediaManager.entities.UserRegistration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
 
+@Component
 public class UserRegistrationMapper {
-
 
     private final PasswordEncoder passwordEncoder;
 
@@ -28,11 +29,12 @@ public class UserRegistrationMapper {
         userRegistration.setUsername(request.getUsername());
         return userRegistration;
     }
+
     public UserRegistrationResponse convertToUserRegistrationResponse(UserRegistrationRequest request) {
-        UserRegistrationResponse userRegistrationResponse = new UserRegistrationResponse();
-        userRegistrationResponse.setEmail(request.getEmail());
-        userRegistrationResponse.setName(request.getUsername());
-        userRegistrationResponse.setMobileno(request.getMobilenumber());
-        return userRegistrationResponse;
+        UserRegistrationResponse response = new UserRegistrationResponse();
+        response.setEmail(request.getEmail());
+        response.setName(request.getName());
+        response.setMobileno(request.getMobilenumber());
+        return response;
     }
 }

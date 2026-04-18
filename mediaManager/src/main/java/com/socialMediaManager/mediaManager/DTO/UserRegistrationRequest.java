@@ -1,17 +1,16 @@
 package com.socialMediaManager.mediaManager.dto;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-
-import javax.validation.constraints.NotNull;
 
 @Data
 public class UserRegistrationRequest {
-    private @NotNull String name;
-    private @NotNull String username;
-    private @NotNull String password;
-    private @NotNull String email;
-    private @NotNull String mobilenumber;
-    private @NotNull String country;
-    private @NotNull int age;
+    @NotNull private String name;
+    @NotNull private String username;
+    @NotNull private String password;
+    @NotNull private String email;
+    @NotNull private String mobilenumber;
+    @NotNull private String country;
+    @NotNull private int age;
     private String state;
 }
