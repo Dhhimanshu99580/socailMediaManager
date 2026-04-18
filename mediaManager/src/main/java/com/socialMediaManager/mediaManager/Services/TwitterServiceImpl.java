@@ -86,7 +86,7 @@ public class TwitterServiceImpl implements TwitterService {
     private RestTemplate restTemplate;
     @Override
     public UserRegistrationResponse processAndSaveUserRegistrationDetails(UserRegistrationRequest request) {
-        Optional<UserRegistration> user = twitterServiceRepo.findByEmailAndMobileno(request.getEmail(),request.getMobilenumber());
+        Optional<UserRegistration> user = twitterServiceRepo.findByEmailAndMobile(request.getEmail(),request.getMobilenumber());
         if(user.isPresent()) {
             throw new userAlreadyExistsException("User with email " + request.getEmail() +
                     " and mobile number " + request.getMobilenumber() + " already exists.");
