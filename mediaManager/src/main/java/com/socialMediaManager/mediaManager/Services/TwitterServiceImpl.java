@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -128,7 +129,10 @@ public class TwitterServiceImpl implements TwitterService {
         body.add("code_verifier", codeVerifier);
 
         HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(body, headers);
-        ResponseEntity<Map> response = restTemplate.exchange(TWITTER_TOKEN_URL, HttpMethod.POST, entity, Map.class);
+        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                TWITTER_TOKEN_URL, HttpMethod.POST, entity,
+                new ParameterizedTypeReference<Map<String, Object>>() {}
+        );
 
         Map<String, Object> responseBody = response.getBody();
         if (responseBody == null || !responseBody.containsKey("access_token")) {
