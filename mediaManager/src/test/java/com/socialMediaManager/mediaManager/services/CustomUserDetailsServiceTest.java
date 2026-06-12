@@ -1,7 +1,7 @@
 package com.socialMediaManager.mediaManager.services;
 
 import com.socialMediaManager.mediaManager.entities.UserRegistration;
-import com.socialMediaManager.mediaManager.repositories.TwitterServiceRepo;
+import com.socialMediaManager.mediaManager.repositories.UserRegistrationRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -19,7 +19,7 @@ import static org.mockito.Mockito.*;
 class CustomUserDetailsServiceTest {
 
     @Mock
-    private TwitterServiceRepo userRepository;
+    private UserRegistrationRepository userRepository;
 
     @InjectMocks
     private CustomUserDetailsService userDetailsService;

@@ -1,6 +1,6 @@
 package com.socialMediaManager.mediaManager.controllers;
 
-import com.socialMediaManager.mediaManager.services.TwitterService;
+import com.socialMediaManager.mediaManager.services.TwitterAuthService;
 import com.socialMediaManager.mediaManager.utility.JwtTokenProvider;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,14 +12,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("api/twitter")
+@RequestMapping("/api/v1/twitter")
 public class TwitterAuthController {
 
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
     @Autowired
-    private TwitterService twitterService;
+    private TwitterAuthService twitterAuthService;
 
     @GetMapping("/authorize")
     public ResponseEntity<String> startTwitterAuthorization(HttpServletRequest request) {
@@ -33,7 +33,7 @@ public class TwitterAuthController {
         }
         String username = jwtTokenProvider.getUsernameFromToken(token);
         try {
-            String twitterAuthUrl = twitterService.getAuthorizationUrl(username);
+            String twitterAuthUrl = twitterAuthService.getAuthorizationUrl(username);
             return ResponseEntity.ok(twitterAuthUrl);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Twitter authorization failed");
@@ -44,7 +44,7 @@ public class TwitterAuthController {
     public ResponseEntity<String> twitterCallback(@RequestParam("code") String code,
                                                    @RequestParam("state") String state) {
         try {
-            twitterService.getAccessToken(code, state);
+            twitterAuthService.getAccessToken(code, state);
             return ResponseEntity.ok("Twitter connected successfully");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)

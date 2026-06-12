@@ -1,9 +1,8 @@
 package com.socialMediaManager.mediaManager.services;
 
 import com.socialMediaManager.mediaManager.entities.UserRegistration;
-import com.socialMediaManager.mediaManager.repositories.TwitterServiceRepo;
+import com.socialMediaManager.mediaManager.repositories.UserRegistrationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -15,17 +14,13 @@ import java.util.ArrayList;
 public class CustomUserDetailsService implements UserDetailsService {
 
     @Autowired
-    private TwitterServiceRepo userRepository;
+    private UserRegistrationRepository userRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         UserRegistration user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
-        return new org.springframework.security.core.userdetails.User(user.getUsername(),
-                user.getPassword(), new ArrayList<>());
+        return new org.springframework.security.core.userdetails.User(
+                user.getUsername(), user.getPassword(), new ArrayList<>());
     }
 }
-
-
-

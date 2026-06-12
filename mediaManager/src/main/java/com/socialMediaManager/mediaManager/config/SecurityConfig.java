@@ -1,5 +1,7 @@
-package com.socialMediaManager.mediaManager.services;
+package com.socialMediaManager.mediaManager.config;
 
+import com.socialMediaManager.mediaManager.services.CustomUserDetailsService;
+import com.socialMediaManager.mediaManager.services.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,7 +31,11 @@ public class SecurityConfig {
         return http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/user-registration", "/user-login").permitAll()
+                        .requestMatchers(
+                                "/api/v1/users/register",
+                                "/api/v1/users/login",
+                                "/api/v1/twitter/callback"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
