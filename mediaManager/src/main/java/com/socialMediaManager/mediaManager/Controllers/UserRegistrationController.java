@@ -4,8 +4,7 @@ import com.socialMediaManager.mediaManager.dto.UserLoginRequest;
 import com.socialMediaManager.mediaManager.dto.UserLoginResponse;
 import com.socialMediaManager.mediaManager.dto.UserRegistrationRequest;
 import com.socialMediaManager.mediaManager.dto.UserRegistrationResponse;
-import com.socialMediaManager.mediaManager.services.CustomUserDetailsService;
-import com.socialMediaManager.mediaManager.services.TwitterServiceImpl;
+import com.socialMediaManager.mediaManager.services.UserService;
 import com.socialMediaManager.mediaManager.utility.JwtTokenProvider;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,13 +15,15 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequestMapping("/api/v1/users")
 public class UserRegistrationController {
 
     @Autowired
-    private TwitterServiceImpl twitterService;
+    private UserService userService;
 
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -30,16 +31,13 @@ public class UserRegistrationController {
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
-    @Autowired
-    private CustomUserDetailsService userDetailsService;
-
-    @PostMapping("/user-registration")
+    @PostMapping("/register")
     public ResponseEntity<UserRegistrationResponse> registerUser(@RequestBody @Valid UserRegistrationRequest request) {
-        UserRegistrationResponse response = twitterService.processAndSaveUserRegistrationDetails(request);
+        UserRegistrationResponse response = userService.register(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PostMapping("/user-login")
+    @PostMapping("/login")
     public ResponseEntity<?> userLogin(@RequestBody @Valid UserLoginRequest request) {
         try {
             authenticationManager.authenticate(

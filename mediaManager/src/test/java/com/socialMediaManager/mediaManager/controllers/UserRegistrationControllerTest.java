@@ -2,13 +2,12 @@ package com.socialMediaManager.mediaManager.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.socialMediaManager.mediaManager.dto.UserLoginRequest;
-import com.socialMediaManager.mediaManager.dto.UserLoginResponse;
 import com.socialMediaManager.mediaManager.dto.UserRegistrationRequest;
 import com.socialMediaManager.mediaManager.dto.UserRegistrationResponse;
 import com.socialMediaManager.mediaManager.exceptions.userAlreadyExistsException;
 import com.socialMediaManager.mediaManager.services.CustomUserDetailsService;
 import com.socialMediaManager.mediaManager.services.JwtAuthenticationFilter;
-import com.socialMediaManager.mediaManager.services.TwitterServiceImpl;
+import com.socialMediaManager.mediaManager.services.UserService;
 import com.socialMediaManager.mediaManager.utility.JwtTokenProvider;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +20,11 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.test.web.servlet.MockMvc;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import org.junit.jupiter.api.BeforeEach;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -36,11 +40,20 @@ class UserRegistrationControllerTest {
     @Autowired private MockMvc mockMvc;
     @Autowired private ObjectMapper objectMapper;
 
-    @MockBean private TwitterServiceImpl twitterService;
+    @MockBean private UserService userService;
     @MockBean private AuthenticationManager authenticationManager;
     @MockBean private JwtTokenProvider jwtTokenProvider;
     @MockBean private CustomUserDetailsService userDetailsService;
     @MockBean private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @BeforeEach
+    void configureFilterPassThrough() throws Exception {
+        doAnswer(inv -> {
+            ((FilterChain) inv.getArgument(2)).doFilter(inv.getArgument(0), inv.getArgument(1));
+            return null;
+        }).when(jwtAuthenticationFilter).doFilter(
+                any(ServletRequest.class), any(ServletResponse.class), any(FilterChain.class));
+    }
 
     @Test
     void registerUser_validRequest_returns201() throws Exception {
@@ -50,9 +63,9 @@ class UserRegistrationControllerTest {
         response.setEmail("him@example.com");
         response.setMobileno("9958490105");
 
-        when(twitterService.processAndSaveUserRegistrationDetails(any())).thenReturn(response);
+        when(userService.register(any())).thenReturn(response);
 
-        mockMvc.perform(post("/user-registration")
+        mockMvc.perform(post("/api/v1/users/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -62,10 +75,10 @@ class UserRegistrationControllerTest {
 
     @Test
     void registerUser_duplicateUser_returns409() throws Exception {
-        when(twitterService.processAndSaveUserRegistrationDetails(any()))
+        when(userService.register(any()))
                 .thenThrow(new userAlreadyExistsException("User already exists"));
 
-        mockMvc.perform(post("/user-registration")
+        mockMvc.perform(post("/api/v1/users/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(buildRegistrationRequest())))
                 .andExpect(status().isConflict())
@@ -82,7 +95,7 @@ class UserRegistrationControllerTest {
         loginRequest.setUsername("himanshu99");
         loginRequest.setPassword("Secret@123");
 
-        mockMvc.perform(post("/user-login")
+        mockMvc.perform(post("/api/v1/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
@@ -99,7 +112,7 @@ class UserRegistrationControllerTest {
         loginRequest.setUsername("himanshu99");
         loginRequest.setPassword("wrongpassword");
 
-        mockMvc.perform(post("/user-login")
+        mockMvc.perform(post("/api/v1/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isUnauthorized());
